@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.blogapplication.blogapplicationapi.Services.CloudinaryService;
-import com.blogapplication.blogapplicationapi.Utils.ApiResponse;
 import com.cloudinary.Cloudinary;
 
 @Service
@@ -16,7 +15,6 @@ public class CloudinaryServiceImpl implements CloudinaryService {
 	@Autowired
 	private Cloudinary cloudinary;
 
-	
 	@Override
 	public Map upload(MultipartFile file) {
 		try {

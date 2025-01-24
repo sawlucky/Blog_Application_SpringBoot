@@ -7,11 +7,12 @@ import org.springframework.http.ResponseEntity;
 //import com.blogapplication.blogapplicationapi.Model.User;
 import com.blogapplication.blogapplicationapi.Payloads.PostDto;
 import com.blogapplication.blogapplicationapi.Utils.ApiResponse;
+import com.blogapplication.blogapplicationapi.Utils.CreatePostResponse;
 import com.blogapplication.blogapplicationapi.Utils.PostResponse;
 
 public interface PostService {
 
-	ResponseEntity<ApiResponse<PostDto>> createPost(PostDto postDto, int userId, int category_id);
+	ResponseEntity<CreatePostResponse<PostDto>> createPost(PostDto postDto, int userId, int category_id);
 
 	ResponseEntity<ApiResponse<PostDto>> updatePost(PostDto postDto, int postId);
 

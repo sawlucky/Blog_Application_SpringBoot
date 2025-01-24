@@ -1,7 +1,7 @@
 package com.blogapplication.blogapplicationapi.Services.Impl;
 
 import java.util.List;
-
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -22,8 +22,10 @@ import com.blogapplication.blogapplicationapi.Payloads.PostDto;
 import com.blogapplication.blogapplicationapi.Repositories.CategoryRepo;
 import com.blogapplication.blogapplicationapi.Repositories.PostRepo;
 import com.blogapplication.blogapplicationapi.Repositories.UserRepo;
+import com.blogapplication.blogapplicationapi.Services.CloudinaryService;
 import com.blogapplication.blogapplicationapi.Services.PostService;
 import com.blogapplication.blogapplicationapi.Utils.ApiResponse;
+import com.blogapplication.blogapplicationapi.Utils.CreatePostResponse;
 import com.blogapplication.blogapplicationapi.Utils.PostResponse;
 
 @Service
@@ -41,23 +43,43 @@ public class PostServiceImpl implements PostService {
 	@Autowired
 	private CategoryRepo categoryRepo;
 
+	@Autowired
+	CloudinaryService cloudinaryService;
+
 	@Override
-	public ResponseEntity<ApiResponse<PostDto>> createPost(PostDto postDto, int userId, int categoryId) {
+	public ResponseEntity<CreatePostResponse<PostDto>> createPost(PostDto postDto, int userId, int categoryId) {
+		// Validate user
 		User user = userRepo.findById(userId)
 				.orElseThrow(() -> new IdNotFoundException("User ID " + userId + " not found"));
+
 		Category category = categoryRepo.findById(categoryId)
 				.orElseThrow(() -> new IdNotFoundException("Category ID " + categoryId + " not found"));
 
 		Post post = PostDtoToPost(postDto);
-		post.setPostImage("default.png");
 		post.setUser(user);
 		post.setCategory(category);
+		Map imageResponse = null;
+		if (postDto.getPostImage() != null && !postDto.getPostImage().isEmpty()) {
+			try {
+				imageResponse = cloudinaryService.upload(postDto.getPostImage());
+				System.out.println("Type of public_id: " + imageResponse.get("public_id").getClass().getName());
+
+				post.setPostImage((String) imageResponse.get("public_id"));
+
+			} catch (Exception e) {
+				throw new RuntimeException("Image upload failed: " + e.getMessage());
+			}
+		}
 
 		Post newPost = postRepo.save(post);
-		ApiResponse<PostDto> api = new ApiResponse<>(HttpStatus.CREATED.value(), "Post created successfully",
-				PostToPostDto(newPost));
+//		PostDto newPostDto = PostToPostDto(newPost);
+		
+//		System.out.println(PostToPostDto(newPost).getPostImage());
 
-		return new ResponseEntity<>(api, HttpStatus.CREATED);
+		CreatePostResponse<PostDto> cpr = new CreatePostResponse<>(HttpStatus.CREATED.value(),
+				"Post created successfully", imageResponse, PostToPostDto(newPost));
+
+		return new ResponseEntity<>(cpr, HttpStatus.CREATED);
 	}
 
 	@Override
@@ -67,7 +89,7 @@ public class PostServiceImpl implements PostService {
 
 		post.setPostTitle(postDto.getPostTitle());
 		post.setPostContent(postDto.getPostContent());
-		post.setPostImage(postDto.getPostImage());
+		post.setPostImage("updated");
 
 		Post updatedPost = postRepo.save(post);
 		ApiResponse<PostDto> api = new ApiResponse<>(HttpStatus.OK.value(), "Post updated successfully",
@@ -161,7 +183,7 @@ public class PostServiceImpl implements PostService {
 		List<Post> list = postRepo.findBypostTitleContaining(keyword);
 		List<PostDto> newList = list.stream().map((items) -> PostToPostDto(items)).collect(Collectors.toList());
 		ApiResponse<List<PostDto>> api = new ApiResponse<List<PostDto>>(HttpStatus.ACCEPTED.value(), keyword, newList);
-		return new ResponseEntity<ApiResponse<List<PostDto>> >(api,HttpStatus.ACCEPTED);
+		return new ResponseEntity<ApiResponse<List<PostDto>>>(api, HttpStatus.ACCEPTED);
 	}
 
 	private Post PostDtoToPost(PostDto postDto) {

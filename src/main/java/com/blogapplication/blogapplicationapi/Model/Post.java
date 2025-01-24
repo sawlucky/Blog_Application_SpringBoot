@@ -2,6 +2,8 @@ package com.blogapplication.blogapplicationapi.Model;
 
 import java.time.Instant;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.web.multipart.MultipartFile;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -32,7 +34,7 @@ public class Post {
 	@Column(name = "post_content", nullable = false, columnDefinition = "TEXT")
 	private String postContent;
 
-	@Column(name = "post_image", length = 500)
+	@Column(name = "post_image")
 	private String postImage;
 
 	@CreationTimestamp
