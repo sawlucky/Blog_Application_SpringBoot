@@ -6,6 +6,9 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.*;
+
+import com.blogapplication.blogapplicationapi.Model.Role;
 
 @Data
 @NoArgsConstructor
@@ -22,4 +25,6 @@ public class UserDto {
 	private String password;
 	@NotEmpty
 	private String about;
+	private Set<Role> role;
+
 }

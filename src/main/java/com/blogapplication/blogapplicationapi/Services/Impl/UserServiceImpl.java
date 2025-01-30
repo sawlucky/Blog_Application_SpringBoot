@@ -2,6 +2,7 @@ package com.blogapplication.blogapplicationapi.Services.Impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -9,11 +10,14 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.blogapplication.blogapplicationapi.Exceptions.IdNotFoundException;
+import com.blogapplication.blogapplicationapi.Model.Role;
 import com.blogapplication.blogapplicationapi.Model.User;
 import com.blogapplication.blogapplicationapi.Payloads.UserDto;
+import com.blogapplication.blogapplicationapi.Repositories.RoleRepo;
 import com.blogapplication.blogapplicationapi.Repositories.UserRepo;
 import com.blogapplication.blogapplicationapi.Services.UserService;
 import com.blogapplication.blogapplicationapi.Utils.ApiResponse;
@@ -26,13 +30,30 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private ModelMapper modelMapper;
 
+	@Autowired
+	private RoleRepo roleRepo;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+
 	@Override
 	public ResponseEntity<ApiResponse<UserDto>> createUser(UserDto userdto) {
 		User user = this.UserDtoToUser(userdto);
 		if (userRepo.existsByEmail(user.getEmail())) {
 			throw new IllegalArgumentException("Email is already in use: " + user.getEmail());
 		}
+		Role role = roleRepo.findByName("ADMIN");
+		if (role == null) {
+			throw new RuntimeException("ADMIN IS not present in the database");
+
+		}
+		user.getRoles().add(role);
+		String encodedPassword = passwordEncoder.encode(user.getPassword());
+		user.setPassword(encodedPassword);
+		userRepo.save(user);
 		User savedUser = userRepo.save(user);
+//		System.out.println(user.getRoles());
+//		UserDto dto = userToDto(savedUser);
+//		dto.setRole(user.getRoles());
 		ApiResponse<UserDto> api = new ApiResponse<UserDto>(HttpStatus.CREATED.value(), "user created Successfully",
 				userToDto(savedUser));
 		return new ResponseEntity<ApiResponse<UserDto>>(api, HttpStatus.CREATED);

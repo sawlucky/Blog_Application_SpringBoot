@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+import java.util.*;
 @Data
 @NoArgsConstructor
 public class PostDto {
@@ -31,4 +31,6 @@ public class PostDto {
 	private CategoryDto category;
 
 	private UserDto user;
+	
+	private List<CommentsDto> comments= new ArrayList<>();
 }

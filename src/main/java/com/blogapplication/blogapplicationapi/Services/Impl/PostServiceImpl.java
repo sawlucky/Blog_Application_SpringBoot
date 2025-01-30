@@ -1,5 +1,6 @@
 package com.blogapplication.blogapplicationapi.Services.Impl;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -73,7 +74,7 @@ public class PostServiceImpl implements PostService {
 
 		Post newPost = postRepo.save(post);
 //		PostDto newPostDto = PostToPostDto(newPost);
-		
+
 //		System.out.println(PostToPostDto(newPost).getPostImage());
 
 		CreatePostResponse<PostDto> cpr = new CreatePostResponse<>(HttpStatus.CREATED.value(),
@@ -90,7 +91,7 @@ public class PostServiceImpl implements PostService {
 		post.setPostTitle(postDto.getPostTitle());
 		post.setPostContent(postDto.getPostContent());
 		post.setPostImage("updated");
-
+		post.setPostDate(Instant.now());
 		Post updatedPost = postRepo.save(post);
 		ApiResponse<PostDto> api = new ApiResponse<>(HttpStatus.OK.value(), "Post updated successfully",
 				PostToPostDto(updatedPost));
